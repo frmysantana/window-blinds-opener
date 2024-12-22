@@ -24,6 +24,9 @@
 // the Orange pin is connected to digital pin 9
 int servoPin = 9;
 
+// initialize count so servo eventually stops
+int count = 0;
+
 // create servo object to control our servo
 // a maximum of eight servo objects can be created 
 Servo myServo;
@@ -36,6 +39,9 @@ void setup()
 
 void loop()
 {
+    // servo should move 20 times before stopping
+    if (count == 10) return;
+
     // move the servo to degree 0
     myServo.write(0);
 
@@ -47,4 +53,6 @@ void loop()
 
     // wait for it to move
     delay(1000);
+
+    count++;
 }
