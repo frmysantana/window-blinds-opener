@@ -1,58 +1,57 @@
 /*
- * Tutorial 6a: Introduction to Servo Motors
+ * Rotates stepper 8 revlutions forward at 6 AM.
  * 
- * Simply rotates your server from 0 to 180 degrees and back.
  *
  * The circuit:
- * - Brown pin to ground
- * - Red pin to 5v
- * - Orange pin to digital pin 9
+ * - Stepper driver powered with 5v, GND
+ * - D8-D11 connected to IN1-IN4 on the stepper driver
  *
- * by BARRAGAN <http://barraganstudio.com>
- * modified 14 August 2013
- * by Blaise Jarrett
- *
- * This example code is in the public domain.
- *
- * Derivative work from:
- * http://arduino.cc/en/Tutorial/Sweep
- *
+ * 
  */
 
-#include <Servo.h> 
+#include <Stepper.h>
+#include <Wire.h>
+#include <RTClib.h>
 
-// the Orange pin is connected to digital pin 9
-int servoPin = 9;
+RTC_DS3231 rtc;
+int stepIN1Pin = 8;
+int stepIN2Pin = 9;
+int stepIN3Pin = 10;
+int stepIN4Pin = 11;
 
-// initialize count so servo eventually stops
-int count = 0;
+int stepsPerRevolution = 2048;
 
-// create servo object to control our servo
-// a maximum of eight servo objects can be created 
-Servo myServo;
- 
-void setup() 
+Stepper myStepper(stepsPerRevolution,
+                  stepIN1Pin, stepIN3Pin,
+                  stepIN2Pin, stepIN4Pin);
+
+void setup()
 {
-    // attaches the servo on pin 9 to the servo object 
-    myServo.attach(servoPin);
+    // set the RPM
+    myStepper.setSpeed(19); // max is 19
+    Serial.begin(9600);
+    if (!rtc.begin()) {
+        Serial.println("Couldn't find RTC");
+        while (1);
+    }
+
+    // Uncomment to set RTC time (Only do this once)
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__))); 
 }
 
 void loop()
 {
-    // servo should move 20 times before stopping
-    if (count == 10) return;
+    // step one revolution in one direction
+    // will need 8 revolutions to open blinds
+    
+    DateTime now = rtc.now();
 
-    // move the servo to degree 0
-    myServo.write(0);
+    if (now.hour() == 6 && now.minute() == 0 && !now.isPM()) {
+      myStepper.step(stepsPerRevolution * 8);
+    }
 
-    // wait for it to move
-    delay(1000);
-
-    // move the servo to degree 180
-    myServo.write(180);
-
-    // wait for it to move
-    delay(1000);
-
-    count++;
+    // somehow activate this with a button...
+    if () {
+      myStepper.step(-stepsPerRevolution * 8);
+    }
 }
